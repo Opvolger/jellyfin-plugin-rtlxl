@@ -8,9 +8,8 @@ namespace Jellyfin.Plugin.RTLXL.Test
         [TestMethod]
         public void Overview_NOT_NULL()
         {
-            var Overview = RTLXLContentProvider.GetOverviewAsync();
-            var test = Overview.ConfigureAwait(false).GetAwaiter().GetResult();
-            Assert.IsNotNull(test);
+            var overview = RTLXLContentProvider.GetAllFolders();
+            Assert.IsNotNull(overview);
         }
     }
 }

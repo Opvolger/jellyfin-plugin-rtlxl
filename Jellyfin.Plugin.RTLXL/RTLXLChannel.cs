@@ -66,7 +66,7 @@ namespace Jellyfin.Plugin.RTLXL
 
             if (string.IsNullOrWhiteSpace(query.FolderId))
             {
-                var lijst = RTLXLContentProvider.GetOverviewAsync().GetAwaiter().GetResult();
+                var lijst = RTLXLContentProvider.GetAllFolders();
                 result = new ChannelItemResult()
                 {
                     Items = lijst
@@ -74,8 +74,16 @@ namespace Jellyfin.Plugin.RTLXL
 
                 return Task.FromResult(result);
             }
+            else
+            {
+                var lijst = RTLXLContentProvider.GetFolder(query.FolderId);
+                result = new ChannelItemResult()
+                {
+                    Items = lijst
+                };
 
-            return Task.FromResult(result);
+                return Task.FromResult(result);
+            }
         }
 
         /// <inheritdoc/>
