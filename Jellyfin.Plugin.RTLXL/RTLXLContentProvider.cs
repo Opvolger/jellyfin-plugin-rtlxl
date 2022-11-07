@@ -17,7 +17,7 @@ namespace Jellyfin.Plugin.RTLXL
 {
     internal static class RTLXLContentProvider
     {
-        public static List<ChannelItemInfo> GetFolder(string folderid)
+        private static List<ChannelItemInfo> GetFolder(string folderid, string id)
         {
             var content = GetResponseAsync<Folder>($"http://www.rtl.nl/system/s4m/vfd/version=1/fun=abstract/d=pc/fmt=smooth/ak={folderid}/output=json/pg=1/").GetAwaiter().GetResult();
             var all = new List<ChannelItemInfo>();
@@ -34,29 +34,77 @@ namespace Jellyfin.Plugin.RTLXL
                         studios = new List<string>() { item.station };
                     }
 
-                    all.Add(new ChannelItemInfo()
+                    if (id == item?.uuid)
                     {
-                        FolderType = ChannelFolderType.Container,
-                        Name = content?.collection?.name,
-                        Type = ChannelItemType.Media,
-                        ImageUrl = $"{content?.meta?.thumb_base_url}{image}",
-                        Id = item?.uuid,
-                        IndexNumber = i,
-                        Studios = studios,
-                        ContentType = ChannelMediaContentType.TvExtra,
-                        MediaSources = new List<MediaSourceInfo>
+                        var playUrl = GetResponseAsync<PlayUrl>($"https://api.rtl.nl/watch/play/api/play/xl/{item?.uuid}?device=web&format=hls").GetAwaiter().GetResult();
+                        all.Add(new ChannelItemInfo()
+                        {
+                            FolderType = ChannelFolderType.Container,
+                            Name = content?.collection?.name,
+                            Type = ChannelItemType.Media,
+                            ImageUrl = $"{content?.meta?.thumb_base_url}{image}",
+                            Id = item?.uuid,
+                            IndexNumber = i,
+                            Studios = studios,
+                            ContentType = ChannelMediaContentType.TvExtra,
+                            MediaSources = new List<MediaSourceInfo>
                         {
                             new MediaSourceInfo()
                             {
-                                Path = $"https://api.rtl.nl/watch/play/api/play/xl/{folderid}?device=web&format=hls",
+                                Path = playUrl?.manifest,
                                 Protocol = MediaProtocol.Http
-                            }
+                            },
                         }
-                    });
+                        });
+                    }
                 }
             }
 
             return all;
+        }
+
+        public static List<ChannelItemInfo> GetFolder(string folderid)
+        {
+            if (folderid.Contains('/', StringComparison.CurrentCulture))
+            {
+                var folderidSplit = folderid.Split("/");
+                return GetFolder(folderidSplit[0], folderidSplit[1]);
+            }
+            else
+            {
+                var content = GetResponseAsync<Folder>($"http://www.rtl.nl/system/s4m/vfd/version=1/fun=abstract/d=pc/fmt=smooth/ak={folderid}/output=json/pg=1/").GetAwaiter().GetResult();
+                var all = new List<ChannelItemInfo>();
+
+                for (var i = 0; i < content?.material?.Count; i++)
+                {
+                    var item = content.material[i];
+                    if (item != null)
+                    {
+                        var image = item?.image?.Split(',').FirstOrDefault();
+                        var studios = new List<string>();
+                        if (item != null && item?.station != null)
+                        {
+                            studios = new List<string>() { item.station };
+                        }
+
+                        if (!string.IsNullOrWhiteSpace(item?.episode_key) && item?.classname == "uitzending")
+                        {
+                            all.Add(new ChannelItemInfo()
+                            {
+                                FolderType = ChannelFolderType.Container,
+                                Name = content?.collection?.name,
+                                Type = ChannelItemType.Folder,
+                                ImageUrl = $"{content?.meta?.thumb_base_url}{image}",
+                                Id = $"{folderid}/{item?.uuid}",
+                                IndexNumber = i,
+                                Studios = studios,
+                            });
+                        }
+                    }
+                }
+
+                return all;
+            }
         }
 
         private static async Task<T?> GetResponseAsync<T>(string reqUrl)
