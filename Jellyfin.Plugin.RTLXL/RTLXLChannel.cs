@@ -52,17 +52,20 @@ namespace Jellyfin.Plugin.RTLXL
         /// <inheritdoc/>
         public Task<ChannelItemResult> GetChannelItems(InternalChannelItemQuery query, CancellationToken cancellationToken)
         {
+            var result = new ChannelItemResult();
+
             if (string.IsNullOrWhiteSpace(query.FolderId))
             {
-                return GetProgramList(query, cancellationToken);
+                var lijst = RTLXLContentProvider.GetOverviewAsync().GetAwaiter().GetResult();
+                result = new ChannelItemResult()
+                {
+                    Items = lijst,
+                    TotalRecordCount = lijst.Count
+                };
+
+                return Task.FromResult(result);
             }
 
-            var lijst = RTLXLContentProvider.GetOverviewAsync().GetAwaiter().GetResult();
-            var result = new ChannelItemResult()
-            {
-                Items = lijst,
-                TotalRecordCount = lijst.Count
-            };
             return Task.FromResult(result);
         }
 
