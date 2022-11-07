@@ -13,6 +13,7 @@
   <ItemGroup>
     <PackageReference Include="Jellyfin.Controller" Version="10.8.0" />
     <PackageReference Include="Jellyfin.Model" Version="10.8.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
   </ItemGroup>
 
   <ItemGroup>
@@ -24,6 +25,10 @@
   <ItemGroup>
     <None Remove="Configuration\configPage.html" />
     <EmbeddedResource Include="Configuration\configPage.html" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Jellyfin.Plugin.RTLXL.Test" />
   </ItemGroup>
 
 </Project>

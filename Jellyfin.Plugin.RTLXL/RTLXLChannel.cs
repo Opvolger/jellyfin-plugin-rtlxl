@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -51,14 +52,24 @@ namespace Jellyfin.Plugin.RTLXL
         /// <inheritdoc/>
         public Task<ChannelItemResult> GetChannelItems(InternalChannelItemQuery query, CancellationToken cancellationToken)
         {
+            if (string.IsNullOrWhiteSpace(query.FolderId))
+            {
+                return GetProgramList(query, cancellationToken);
+            }
+
             var result = new ChannelItemResult()
             {
                 Items = new List<ChannelItemInfo>()
                 {
-                    new ChannelItemInfo() { FolderType = ChannelFolderType.Series, Name = " Test" }
+                    new ChannelItemInfo() { FolderType = ChannelFolderType.Container, Name = "Test", Type = ChannelItemType.Folder }
                 }
             };
             return Task.FromResult(result);
+        }
+
+        private Task<ChannelItemResult> GetProgramList(InternalChannelItemQuery query, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
         }
 
         /// <inheritdoc/>
