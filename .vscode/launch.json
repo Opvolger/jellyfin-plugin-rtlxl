@@ -11,7 +11,7 @@
             "args": [
                //"--nowebclient"
                "--webdir",
-               "${config:jellyfinWebDir}/dist/"
+               "${config:jellyfinWebDir}/jellyfin-web_10.8.0/"
             ],
             "cwd": "${config:jellyfinDir}",
         }

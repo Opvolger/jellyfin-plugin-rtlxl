@@ -32,10 +32,15 @@
         "type": "shell",
         "command": "mkdir",
         "args": [
-           "-Force",
-           "-Path",
+           "-p",
            "${config:jellyfinDataDir}/plugins/${config:pluginName}/"
         ]
+
+        // "args": [
+        //    "-Force",
+        //    "-Path",
+        //    "${config:jellyfinDataDir}/plugins/${config:pluginName}/"
+        // ]
     },
     {
         // Copy the plugin dll to the jellyfin plugin install path
