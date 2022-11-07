@@ -57,12 +57,11 @@ namespace Jellyfin.Plugin.RTLXL
                 return GetProgramList(query, cancellationToken);
             }
 
+            var lijst = RTLXLContentProvider.GetOverviewAsync().GetAwaiter().GetResult();
             var result = new ChannelItemResult()
             {
-                Items = new List<ChannelItemInfo>()
-                {
-                    new ChannelItemInfo() { FolderType = ChannelFolderType.Container, Name = "Test", Type = ChannelItemType.Folder }
-                }
+                Items = lijst,
+                TotalRecordCount = lijst.Count
             };
             return Task.FromResult(result);
         }
