@@ -29,8 +29,26 @@ namespace Jellyfin.Plugin.RTLXL
             for (var i = 0; i < content?.abstracts?.Count; i++)
             {
                 var item = content.abstracts[i];
-                var image = item?.coverurl?.Split(',').FirstOrDefault();
-                all.Add(new ChannelItemInfo() { FolderType = ChannelFolderType.Container, Name = item?.name, Type = ChannelItemType.Folder, ImageUrl = $"{content?.meta?.thumb_base_url}{image}" });
+                if (item != null)
+                {
+                    var image = item?.coverurl?.Split(',').FirstOrDefault();
+                    var studios = new List<string>();
+                    if (item != null && item?.station != null)
+                    {
+                        studios = new List<string>() { item.station };
+                    }
+
+                    all.Add(new ChannelItemInfo()
+                    {
+                        FolderType = ChannelFolderType.Container,
+                        Name = item?.name,
+                        Type = ChannelItemType.Folder,
+                        ImageUrl = $"{content?.meta?.thumb_base_url}{image}",
+                        Id = item?.key,
+                        IndexNumber = i,
+                        Studios = studios,
+                    });
+                }
             }
 
             return all;
