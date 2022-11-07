@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Channels;
@@ -12,7 +13,7 @@ namespace Jellyfin.Plugin.RTLXL
     /// <summary>
     /// RTLXL Challen implementation.
     /// </summary>
-    public class RTLXLChannel : IChannel
+    public class RTLXLChannel : IChannel, IHasCacheKey
     {
         /// <inheritdoc/>
         public string Name => "RTL XL";
@@ -87,6 +88,25 @@ namespace Jellyfin.Plugin.RTLXL
         public bool IsEnabledFor(string userId)
         {
             return true;
+        }
+
+        /// <inheritdoc/>
+        public string GetCacheKey(string userId)
+        {
+            var now = DateTime.UtcNow;
+
+            var values = new List<string>();
+
+            values.Add(now.DayOfYear.ToString(CultureInfo.InvariantCulture));
+            values.Add(now.Hour.ToString(CultureInfo.InvariantCulture));
+            values.Add(now.Minute.ToString(CultureInfo.InvariantCulture));
+
+            // double minute = now.Minute;
+            // minute /= 5;
+
+            // values.Add(Math.Floor(minute).ToString(CultureInfo.InvariantCulture));
+
+            return string.Join('-', values.ToArray());
         }
     }
 }
