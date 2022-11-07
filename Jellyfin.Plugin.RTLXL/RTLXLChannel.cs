@@ -7,13 +7,14 @@ using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.MediaInfo;
 
 namespace Jellyfin.Plugin.RTLXL
 {
     /// <summary>
     /// RTLXL Challen implementation.
     /// </summary>
-    public class RTLXLChannel : IChannel, IHasCacheKey
+    public class RTLXLChannel : IChannel, IHasCacheKey, IHasFolderAttributes
     {
         /// <inheritdoc/>
         public string Name => "RTL XL";
@@ -30,6 +31,11 @@ namespace Jellyfin.Plugin.RTLXL
         /// <inheritdoc/>
         public ChannelParentalRating ParentalRating => ChannelParentalRating.GeneralAudience;
 
+#pragma warning disable CA1819
+        /// <inheritdoc/>
+        public string[] Attributes => new[] { "Recordings" };
+#pragma warning restore CA1819
+
         /// <inheritdoc/>
         public InternalChannelFeatures GetChannelFeatures()
         {
@@ -37,17 +43,20 @@ namespace Jellyfin.Plugin.RTLXL
             {
                 MediaTypes = new List<ChannelMediaType>() { ChannelMediaType.Video },
                 SupportsContentDownloading = false,
-                DefaultSortFields = new List<ChannelItemSortField>() { ChannelItemSortField.Name, ChannelItemSortField.PremiereDate }
+                DefaultSortFields = new List<ChannelItemSortField>() { ChannelItemSortField.Name, ChannelItemSortField.PremiereDate },
+                ContentTypes = new List<ChannelMediaContentType>() { ChannelMediaContentType.Clip, ChannelMediaContentType.Movie, ChannelMediaContentType.Episode, ChannelMediaContentType.TvExtra }
             };
         }
 
         /// <inheritdoc/>
         public Task<DynamicImageResponse> GetChannelImage(ImageType type, CancellationToken cancellationToken)
         {
-            return Task.FromResult(new DynamicImageResponse
+            if (type == ImageType.Primary)
             {
-                HasImage = false
-            });
+                return Task.FromResult(new DynamicImageResponse { Path = "https://www.androidplanet.nl/wp-content/uploads/2015/11/nieuwe-rtl-xl-app.jpg", Protocol = MediaProtocol.Http, HasImage = true });
+            }
+
+            return Task.FromResult(new DynamicImageResponse { HasImage = false });
         }
 
         /// <inheritdoc/>
@@ -60,19 +69,13 @@ namespace Jellyfin.Plugin.RTLXL
                 var lijst = RTLXLContentProvider.GetOverviewAsync().GetAwaiter().GetResult();
                 result = new ChannelItemResult()
                 {
-                    Items = lijst,
-                    TotalRecordCount = lijst.Count
+                    Items = lijst
                 };
 
                 return Task.FromResult(result);
             }
 
             return Task.FromResult(result);
-        }
-
-        private Task<ChannelItemResult> GetProgramList(InternalChannelItemQuery query, CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
         }
 
         /// <inheritdoc/>
